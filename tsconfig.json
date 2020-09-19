@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "lib": [
+      "esnext",
+      "esnext.asynciterable",
+      "dom"
+    ],
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "strict": true,
+    "baseUrl": "./",
+    "types": [
+      "@types/node",
+      "./src/scripts/@types/window",
+      "./src/scripts/@types/resources"
+    ],
+    "jsx": "react",
+    "paths": {
+      "~/*": [
+        "src/scripts/*"
+      ]
+    },
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "./src/scripts/*"
+  ]
+}

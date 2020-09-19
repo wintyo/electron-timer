@@ -1,0 +1,16 @@
+.lapTimeTable {
+  display: table;
+  width: 400px;
+}
+
+.lapTimeRow {
+  display: table-row;
+
+  &:nth-child(even) {
+    background-color: #f0f0f0;
+  }
+
+  &__cell {
+    display: table-cell;
+  }
+}
