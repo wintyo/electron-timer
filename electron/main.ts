@@ -6,13 +6,29 @@ import { BrowserWindow, app, ipcMain } from 'electron';
 // interfaces
 import { IIPCData } from '../common/interfaces/IPC';
 
-let win: BrowserWindow;
+let win: BrowserWindow | null = null;
 let data: IIPCData = {
   isAlwaysTop: false,
 };
 
+// アプリケーションの二重起動というよりBrowserWindowの二重起動だったのでこのチェックはなくても問題なさそう
+// const gotTheLock = app.requestSingleInstanceLock();
+// if (!gotTheLock) {
+//   app.quit();
+// } else {
+//   app.on('second-instance', (event) => {
+//     console.log('second');
+//   });
+//
+//   app.whenReady().then(createWindow);
+// }
+
 async function createWindow() {
+  if (win != null) {
+    return;
+  }
   win = new BrowserWindow({
+    alwaysOnTop: data.isAlwaysTop,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -36,6 +52,7 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+  win = null;
 });
 
 app.on('activate', () => {
@@ -51,6 +68,9 @@ ipcMain.on('loadIpcData', (event) => {
 })
 
 ipcMain.on('setIsAlwaysTop', async (event, isAlwaysTop: boolean) => {
+  if (win == null) {
+    return;
+  }
   data.isAlwaysTop = isAlwaysTop;
   win.setAlwaysOnTop(isAlwaysTop);
   event.sender.send('receiveData', data);
