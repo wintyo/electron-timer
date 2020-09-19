@@ -7,6 +7,9 @@ import * as styles from './css/App.scss';
 // utils
 import File from '../utils/File';
 
+// interfaces
+import { IIPCData } from '../../../common/interfaces/IPC';
+
 /** 期間データを持つ時間リスト */
 interface IPeriodTime {
   /** 開始時刻 */
@@ -57,9 +60,23 @@ function formatTime(time: number) {
 
 const App = () => {
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
+  const [ipcData, setIpcData] = useState<IIPCData | null>(null);
   const [isTimeCounting, setIsTimeCounting] = useState(false);
   const [periodTimes, setPeriodTimes] = useState<Array<IPeriodTime>>([]);
   const [lapTimes, setLapTimes] = useState<Array<ILapTime>>([]);
+
+  useEffect(() => {
+    if (window.IPC == null) {
+      return;
+    }
+    window.IPC.loadIpcData()
+      .then((data) => {
+        setIpcData(data);
+      });
+    window.IPC.onReceiveData((data) => {
+      setIpcData(data);
+    });
+  }, []);
 
   useEffect(() => {
     if (!isTimeCounting) {
@@ -73,6 +90,16 @@ const App = () => {
       window.clearInterval(intervalId);
     };
   }, [isTimeCounting]);
+
+  /**
+   * 最前面にするかの状態をトグルする
+   */
+  const toggleIsAlwaysTop = () => {
+    if (window.IPC == null || ipcData == null) {
+      return;
+    }
+    window.IPC.setIsAlwaysTop(!ipcData.isAlwaysTop);
+  }
 
   /**
    * タイマーの開始
@@ -138,6 +165,11 @@ const App = () => {
   return (
     <div>
       <h1>ストップウォッチ</h1>
+      {ipcData ? (
+        <div>
+          <button onClick={toggleIsAlwaysTop}>前面{ipcData.isAlwaysTop ? '解除' : '固定'}</button>
+        </div>
+      ) : null}
       <div>{formatTime(timeCount)}</div>
       <div>
         <button

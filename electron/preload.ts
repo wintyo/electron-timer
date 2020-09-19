@@ -1,16 +1,24 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
-const IPC = {
-  loadMonthTexts: (targetMonth: Date) => {
+// interfaces
+import { IIPC, IIPCData } from '../common/interfaces/IPC';
+
+const IPC: IIPC = {
+  setIsAlwaysTop: (isAlwaysTop) => {
+    ipcRenderer.send('setIsAlwaysTop', isAlwaysTop);
+  },
+  loadIpcData: () => {
     return new Promise((resolve) => {
-      ipcRenderer.send('loadMonthTexts', targetMonth);
-      ipcRenderer.once('res:loadMonthTexts', (event, monthTexts: Array<string>) => {
-        resolve(monthTexts);
+      ipcRenderer.send('loadIpcData');
+      ipcRenderer.once('res:loadIpcData', (event, data: IIPCData) => {
+        resolve(data);
       });
     });
   },
-  saveMonthTexts: (targetMonth: Date, textMap: { [dateStr: string]: string }) => {
-    ipcRenderer.send('saveMonthTexts', targetMonth, textMap);
+  onReceiveData: (receiver) => {
+    ipcRenderer.on('receiveData', (event, data: IIPCData) => {
+      receiver(data);
+    });
   }
 };
 

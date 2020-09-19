@@ -3,8 +3,16 @@ import { promises as fsPromises } from 'fs';
 import { format as formatDate } from 'date-fns';
 import { BrowserWindow, app, ipcMain } from 'electron';
 
-function createWindow() {
-  const win = new BrowserWindow({
+// interfaces
+import { IIPCData } from '../common/interfaces/IPC';
+
+let win: BrowserWindow;
+let data: IIPCData = {
+  isAlwaysTop: false,
+};
+
+async function createWindow() {
+  win = new BrowserWindow({
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -13,9 +21,9 @@ function createWindow() {
   });
 
   if (process.env.NODE_ENV === 'development') {
-    win.loadURL('http://localhost:9040');
+    await win.loadURL('http://localhost:9040');
   } else {
-    win.loadFile('out/index.html');
+    await win.loadFile('out/index.html');
   }
 }
 
@@ -38,25 +46,12 @@ app.on('activate', () => {
   }
 });
 
-ipcMain.on('loadMonthTexts', async (event, targetMonth: Date) => {
-  try {
-    const text = await fsPromises.readFile(path.resolve(app.getPath('userData'), `data/${formatDate(targetMonth, 'yyyy-MM')}.json`), {
-      encoding: 'utf-8',
-    });
-    event.sender.send('res:loadMonthTexts', JSON.parse(text));
-  } catch {
-    event.sender.send('res:loadMonthTexts', {});
-  }
-});
+ipcMain.on('loadIpcData', (event) => {
+  event.sender.send('res:loadIpcData', data);
+})
 
-ipcMain.on('saveMonthTexts', async (event, targetMonth: Date, textMap: { [dateStr: string]: string }) => {
-  console.log(app.getPath('userData'));
-  try {
-    await fsPromises.mkdir(path.resolve(app.getPath('userData'), 'data'));
-  } catch {
-  }
-  await fsPromises.writeFile(
-    path.resolve(app.getPath('userData'), `data/${formatDate(targetMonth, 'yyyy-MM')}.json`),
-    JSON.stringify(textMap, null, '  ')
-  );
+ipcMain.on('setIsAlwaysTop', async (event, isAlwaysTop: boolean) => {
+  data.isAlwaysTop = isAlwaysTop;
+  win.setAlwaysOnTop(isAlwaysTop);
+  event.sender.send('receiveData', data);
 });
