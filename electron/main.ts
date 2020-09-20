@@ -47,6 +47,7 @@ async function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.resolve(__dirname, './preload.js'),
+      worldSafeExecuteJavaScript: true,
     },
   });
 
