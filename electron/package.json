@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npm-run-all --parallel electron build:dev",
     "electron": "electron .",
-    "electron:build": "ts-node build.ts",
+    "electron:build": "yarn build:prod && ts-node build.ts",
     "build:dev": "webpack --watch --mode development",
     "build:prod": "webpack --mode production"
   },

@@ -1,14 +1,14 @@
 import path from 'path';
 import { promises as fsPromises } from 'fs';
 import { format as formatDate } from 'date-fns';
-import { BrowserWindow, app, ipcMain } from 'electron';
+import { BrowserWindow, app, ipcMain, screen } from 'electron';
 
 // interfaces
 import { IIPCData } from '../common/interfaces/IPC';
 
 let win: BrowserWindow | null = null;
 let data: IIPCData = {
-  isAlwaysTop: false,
+  isAlwaysTop: true,
 };
 
 // アプリケーションの二重起動というよりBrowserWindowの二重起動だったのでこのチェックはなくても問題なさそう
@@ -22,6 +22,20 @@ let data: IIPCData = {
 //
 //   app.whenReady().then(createWindow);
 // }
+
+/**
+ * 所定の位置に移動する
+ * @param browserWindow - ブラウザウィンドウ
+ */
+function movePosition(browserWindow: BrowserWindow) {
+  const firstDisplay = screen.getAllDisplays()[0];
+  const displayBounds = firstDisplay.bounds;
+  const browserBounds = browserWindow.getBounds();
+  browserWindow.setPosition(
+    displayBounds.x + displayBounds.width - browserBounds.width,
+    displayBounds.y
+  );
+}
 
 async function createWindow() {
   if (win != null) {
@@ -39,6 +53,8 @@ async function createWindow() {
   if (process.env.NODE_ENV === 'development') {
     await win.loadURL('http://localhost:9040');
   } else {
+    win.setSize(400, 350);
+    movePosition(win);
     await win.loadFile('out/index.html');
   }
 }
